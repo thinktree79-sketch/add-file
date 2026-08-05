@@ -321,6 +321,13 @@
           <div class="agent-phone">032-567-1222</div>
         </div>
       </div>
+      <div class="agent-row" style="border-top:none; padding-top:8px;">
+        <div class="agent-avatar" style="background:#0F6E56;">박</div>
+        <div>
+          <div class="agent-name">박소영 팀장</div>
+          <div class="agent-phone">010-5545-3222</div>
+        </div>
+      </div>
     </div>
     <button class="cta-btn" id="detailInquiryBtn">이 매물 상담 신청하기</button>
   </div>
@@ -391,7 +398,7 @@ function showView(name) {
   const titleMap = {
     list: ['김목구부동산 · 검단 매물', '아라역 · 신검단중앙역 인근'],
     detail: [currentProperty ? currentProperty['건물명'] || '매물 상세' : '매물 상세', '자세히 보기'],
-    form: ['상담 신청', '김목구부동산 032-567-1222']
+    form: ['상담 신청', '김목구부동산 032-567-1222 · 박소영 팀장 010-5545-3222']
   };
   document.getElementById('topTitle').textContent = titleMap[name][0];
   document.getElementById('topSub').textContent = titleMap[name][1];
