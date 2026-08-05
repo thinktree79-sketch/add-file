@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>김목구부동산 - 맞춤 매물 안내</title>
+
+<meta property="og:title" content="김목구부동산 - 고객님 맞춤 매물" />
+<meta property="og:description" content="고객님을 위해 엄선한 매물을 안내드려요." />
+<meta property="og:type" content="website" />
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+    background: #F1EFE8;
+    color: #24303D;
+    padding-bottom: 40px;
+  }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #F1EFE8; }
+
+  .topbar {
+    padding: 16px;
+    background: #04342C;
+    color: #E1F5EE;
+  }
+  .topbar .title { font-size: 16px; font-weight: 600; }
+  .topbar .sub { font-size: 12px; color: #9FE1CB; margin-top: 3px; }
+
+  .status-msg { text-align: center; padding: 60px 20px; color: #888780; font-size: 13px; }
+
+  .intro {
+    padding: 14px 16px 4px;
+    font-size: 13px;
+    color: #5F5E5A;
+    line-height: 1.6;
+  }
+  .intro b { color: #24303D; }
+
+  #listItems { padding: 12px 16px; }
+
+  .property-card {
+    display: flex;
+    gap: 10px;
+    background: #FAF7F0;
+    border: 1.5px solid #D3D1C7;
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    position: relative;
+    transition: border-color .15s;
+  }
+  .property-card.selected {
+    border-color: #0F6E56;
+    background: #EAF6F1;
+  }
+  .check-circle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid #D3D1C7;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: transparent;
+  }
+  .property-card.selected .check-circle {
+    background: #0F6E56;
+    border-color: #0F6E56;
+    color: #fff;
+  }
+
+  .thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    background: #9FE1CB;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #04342C;
+    font-size: 10px;
+    overflow: hidden;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .card-info { flex: 1; min-width: 0; padding-right: 24px; }
+  .card-info .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #24303D;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 16px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+  .badge-sale { background: #FAECE7; color: #4A1B0C; }
+  .badge-jeonse { background: #E1F5EE; color: #04342C; }
+  .badge-wolse { background: #FAEEDA; color: #412402; }
+  .card-info .meta { font-size: 11px; color: #5F5E5A; margin: 4px 0; }
+  .card-info .price { font-size: 14px; font-weight: 600; color: #24303D; }
+
+  .footer-bar {
+    position: sticky;
+    bottom: 0;
+    background: #F1EFE8;
+    padding: 10px 16px 16px;
+  }
+  .select-count {
+    text-align: center;
+    font-size: 12px;
+    color: #5F5E5A;
+    margin-bottom: 8px;
+  }
+  .select-count b { color: #0F6E56; }
+  .submit-btn {
+    width: 100%;
+    background: #0F6E56;
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 13px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .submit-btn:disabled {
+    background: #C9C7BD;
+    cursor: not-allowed;
+  }
+  .success-box {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .success-box .icon { font-size: 36px; margin-bottom: 10px; }
+  .success-box .msg1 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .success-box .msg2 { font-size: 12px; color: #5F5E5A; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="title" id="topTitle">고객님을 위한 맞춤 매물</div>
+    <div class="sub">김목구부동산 · 032-567-1222</div>
+  </div>
+
+  <div id="mainArea">
+    <div class="status-msg" id="statusMsg">매물을 불러오는 중이에요...</div>
+
+    <div class="intro" id="introText" style="display:none;"></div>
+
+    <div id="listItems"></div>
+
+    <div class="footer-bar" id="footerBar" style="display:none;">
+      <div class="select-count" id="selectCount">최대 3개까지 골라주세요 (<b>0</b>/3 선택)</div>
+      <button class="submit-btn" id="submitBtn" disabled>이 매물들로 선택 완료하기</button>
+    </div>
+  </div>
+
+  <div class="success-box" id="successBox">
+    <div class="icon">✅</div>
+    <div class="msg1">선택해주셔서 감사해요!</div>
+    <div class="msg2">고르신 매물로 곧 연락드릴게요.<br />궁금한 점 있으시면 편하게 전화 주세요 :)</div>
+  </div>
+
+</div>
+
+<script>
+/* ===================== 설정 ===================== */
+const API_URL = "https://script.google.com/macros/s/AKfycbzT4EGSKvXmScZgJ5uvFz0a0AGrhlcSh38Jb9E2yXios77j5zM4RU2d4SWjYQi3iDCtKw/exec";
+
+/* 주소 끝에 ?c=공유코드 형태로 붙어요. 실제 고객ID는 여기 전혀 안 보여요.
+   이 링크는 link-generator.html(중개사 전용 도구)에서 자동으로 만들어줘요. */
+const params = new URLSearchParams(window.location.search);
+const shareCode = params.get('c');
+
+const MAX_SELECT = 3;
+let properties = [];
+let customerName = '';
+let resolvedCustomerId = ''; // 서버가 공유코드로 찾아준 실제 고객ID (화면에는 노출 안 함)
+let selectedIds = [];
+
+function priceLabel(p) {
+  if (p['거래유형'] === '매매' && p['매매가']) return { price: formatPrice(p['매매가']), type: '매매가' };
+  if (p['거래유형'] === '전세' && p['전세']) return { price: formatPrice(p['전세']), type: '전세' };
+  if (p['거래유형'] === '월세') return { price: formatPrice(p['보증금'] || p['월세']), type: '월세 ' + (p['월세'] || '') };
+  return { price: '가격 문의', type: p['거래유형'] || '' };
+}
+function formatPrice(v) {
+  const n = Number(v);
+  if (!n || isNaN(n)) return v || '-';
+  const 억 = Math.floor(n / 10000);
+  const 만 = n % 10000;
+  if (억 > 0 && 만 > 0) return `${억}억 ${만.toLocaleString()}`;
+  if (억 > 0) return `${억}억`;
+  return `${n.toLocaleString()}만`;
+}
+function badgeClass(type) {
+  if (type === '매매') return 'badge-sale';
+  if (type === '전세') return 'badge-jeonse';
+  return 'badge-wolse';
+}
+
+async function load() {
+  if (!shareCode) {
+    document.getElementById('statusMsg').textContent =
+      "유효하지 않은 링크예요. 중개사에게 링크를 다시 요청해주세요.";
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL + "?action=getCustomerPropertiesByCode&code=" + encodeURIComponent(shareCode));
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || "불러오기 실패");
+
+    properties = (json.data || []).slice(0, 5); // 최대 5개까지만 노출
+    customerName = json.고객이름 || '';
+    resolvedCustomerId = json.고객ID || '';
+
+    if (properties.length === 0) {
+      document.getElementById('statusMsg').textContent = "아직 준비된 매물이 없어요. 곧 안내드릴게요!";
+      return;
+    }
+
+    document.getElementById('statusMsg').style.display = 'none';
+    document.getElementById('topTitle').textContent =
+      customerName ? `${customerName}님을 위한 맞춤 매물` : '고객님을 위한 맞춤 매물';
+
+    const introEl = document.getElementById('introText');
+    introEl.style.display = 'block';
+    introEl.innerHTML = `${customerName ? customerName + '님, ' : ''}조건에 맞을 것 같은 매물 <b>${properties.length}개</b>를 골라봤어요.<br />이 중에서 마음에 드시는 매물을 <b>최대 3개까지</b> 골라주세요.`;
+
+    renderList();
+    document.getElementById('footerBar').style.display = 'block';
+  } catch (err) {
+    document.getElementById('statusMsg').textContent =
+      "매물을 불러오지 못했어요. (" + err.message + ")";
+  }
+}
+
+function renderList() {
+  const container = document.getElementById('listItems');
+  container.innerHTML = properties.map((p) => {
+    const pl = priceLabel(p);
+    const thumb = p['사진목록'] && p['사진목록'][0]
+      ? `<img src="${p['사진목록'][0].viewUrl}" alt="" />`
+      : '사진 준비중';
+    const id = p['매물번호'];
+
+    return `
+      <div class="property-card" data-id="${id}" onclick="toggleSelect('${id}')">
+        <div class="check-circle">✓</div>
+        <div class="thumb">${thumb}</div>
+        <div class="card-info">
+          <div class="name">${p['건물명'] || '매물'} ${p['동'] || ''}</div>
+          <span class="badge ${badgeClass(p['거래유형'])}">${p['거래유형'] || ''}</span>
+          <div class="meta">${p['타입'] ? p['타입'] + '타입' : ''} · ${p['호수'] || ''} · ${p['방향'] || ''}</div>
+          <div class="price">${pl.price}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleSelect(id) {
+  const idx = selectedIds.indexOf(id);
+  if (idx > -1) {
+    selectedIds.splice(idx, 1);
+  } else {
+    if (selectedIds.length >= MAX_SELECT) {
+      alert(`최대 ${MAX_SELECT}개까지만 고르실 수 있어요. 다른 매물을 먼저 선택 해제해주세요.`);
+      return;
+    }
+    selectedIds.push(id);
+  }
+  updateUI();
+}
+
+function updateUI() {
+  document.querySelectorAll('.property-card').forEach(card => {
+    card.classList.toggle('selected', selectedIds.includes(card.dataset.id));
+  });
+  document.getElementById('selectCount').innerHTML =
+    `최대 ${MAX_SELECT}개까지 골라주세요 (<b>${selectedIds.length}</b>/${MAX_SELECT} 선택)`;
+  document.getElementById('submitBtn').disabled = selectedIds.length === 0;
+}
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '전달 중...';
+
+  const chosen = properties.filter(p => selectedIds.includes(p['매물번호']));
+  const summary = chosen.map(p => `${p['건물명']} ${p['동'] || ''} ${p['호수'] || ''}`.trim()).join(', ');
+
+  const payload = {
+    action: 'addConsultation',
+    data: JSON.stringify({
+      고객ID: resolvedCustomerId,
+      고객이름: customerName,
+      매물번호: selectedIds.join(','),
+      유형: '고객선택',
+      상담내용: `고객이 맞춤 매물 중 선택함: ${summary}`
+    })
+  };
+
+  try {
+    const params2 = new URLSearchParams(payload);
+    const res = await fetch(API_URL + "?" + params2.toString());
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || '전송 실패');
+
+    document.getElementById('mainArea').style.display = 'none';
+    document.getElementById('successBox').style.display = 'block';
+  } catch (err) {
+    alert('전송 중 문제가 생겼어요: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '이 매물들로 선택 완료하기';
+  }
+});
+
+load();
+</script>
+</body>
+</html>
