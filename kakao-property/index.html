@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>김목구부동산 - 검단 매물</title>
+
+<meta property="og:title" content="김목구부동산 - 검단 매물 안내" />
+<meta property="og:description" content="검단신도시 아라역, 신검단중앙역 인근 실시간 매물 안내입니다." />
+<meta property="og:type" content="website" />
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+    background: #F1EFE8;
+    color: #24303D;
+    padding-bottom: 40px;
+  }
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #F1EFE8;
+  }
+
+  /* 상단바 */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #04342C;
+    color: #E1F5EE;
+  }
+  .topbar .back-btn {
+    background: none;
+    border: none;
+    color: #E1F5EE;
+    font-size: 20px;
+    cursor: pointer;
+    display: none;
+    padding: 0;
+    line-height: 1;
+  }
+  .topbar .back-btn.show { display: inline-block; }
+  .topbar .title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .topbar .sub {
+    font-size: 11px;
+    color: #9FE1CB;
+    margin-top: 2px;
+  }
+
+  /* 상태 메시지 */
+  .status-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888780;
+    font-size: 13px;
+  }
+
+  /* 목록 화면 */
+  #listView { padding: 12px; }
+  .property-card {
+    display: flex;
+    gap: 10px;
+    background: #FAF7F0;
+    border: 0.5px solid #D3D1C7;
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .property-card:active { background: #EEEBE1; }
+  .thumb {
+    width: 68px;
+    height: 68px;
+    border-radius: 8px;
+    background: #9FE1CB;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #04342C;
+    font-size: 10px;
+    overflow: hidden;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .card-info { flex: 1; min-width: 0; }
+  .card-info .row1 {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .card-info .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #24303D;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 16px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-sale { background: #FAECE7; color: #4A1B0C; }
+  .badge-jeonse { background: #E1F5EE; color: #04342C; }
+  .badge-wolse { background: #FAEEDA; color: #412402; }
+  .card-info .meta {
+    font-size: 11px;
+    color: #5F5E5A;
+    margin: 4px 0;
+  }
+  .card-info .price {
+    font-size: 14px;
+    font-weight: 600;
+    color: #24303D;
+  }
+
+  /* 상세 화면 */
+  #detailView { display: none; }
+  .gallery {
+    width: 100%;
+    height: 220px;
+    background: #9FE1CB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .gallery img { width: 100%; height: 100%; object-fit: cover; }
+  .gallery .no-photo { color: #04342C; font-size: 12px; text-align: center; }
+  .gallery .counter {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.4);
+    color: #fff;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .detail-body { padding: 16px; }
+  .detail-body .name { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
+  .detail-body .addr { font-size: 12px; color: #5F5E5A; margin-bottom: 12px; }
+  .detail-body .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .detail-body .price-row .price { font-size: 22px; font-weight: 600; }
+  .detail-body .price-row .type { font-size: 12px; color: #888780; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .info-cell {
+    background: #FAF7F0;
+    border-radius: 10px;
+    padding: 9px 10px;
+  }
+  .info-cell .label { font-size: 11px; color: #888780; margin-bottom: 2px; }
+  .info-cell .value { font-size: 13px; font-weight: 600; }
+
+  .memo-box {
+    border-top: 0.5px solid #D3D1C7;
+    padding-top: 12px;
+    margin-bottom: 14px;
+  }
+  .memo-box .label { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .memo-box .text { font-size: 13px; color: #5F5E5A; line-height: 1.6; }
+
+  .agent-row {
+    border-top: 0.5px solid #D3D1C7;
+    padding-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .agent-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: #04342C; color: #E1F5EE;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+  }
+  .agent-name { font-size: 12px; font-weight: 600; }
+  .agent-phone { font-size: 11px; color: #5F5E5A; }
+
+  .cta-btn {
+    width: 100%;
+    background: #0F6E56;
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 13px;
+    border-radius: 10px;
+    margin: 8px 16px 20px;
+    width: calc(100% - 32px);
+    cursor: pointer;
+  }
+
+  /* 문의 폼 */
+  #formView { display: none; padding: 16px; }
+  .form-card {
+    background: #FAF7F0;
+    border: 0.5px solid #D3D1C7;
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .form-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .form-sub { font-size: 12px; color: #5F5E5A; margin-bottom: 16px; }
+  .selected-property {
+    background: #E1F5EE;
+    color: #04342C;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .hint { font-size: 11px; color: #888780; margin-bottom: 14px; }
+  label.field-label {
+    font-size: 12px;
+    color: #5F5E5A;
+    display: block;
+    margin-bottom: 4px;
+  }
+  input[type=text], input[type=tel], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 0.5px solid #D3D1C7;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    background: #fff;
+  }
+  .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .quick-btns button {
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 20px;
+    border: 0.5px solid #D3D1C7;
+    background: #fff;
+    cursor: pointer;
+  }
+  .quick-btns button.selected {
+    background: #0F6E56;
+    color: #fff;
+    border-color: #0F6E56;
+  }
+  .consent-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #F1EFE8;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    cursor: pointer;
+  }
+  .consent-box input { margin-top: 2px; flex-shrink: 0; }
+  .consent-box .text { font-size: 12px; color: #5F5E5A; line-height: 1.5; }
+  .consent-box .text b { color: #24303D; }
+  .warn-msg { font-size: 11px; color: #E24B4A; margin-top: 8px; text-align: center; display: none; }
+  .success-msg { font-size: 13px; color: #0F6E56; margin-top: 8px; text-align: center; display: none; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <button class="back-btn" id="backBtn" onclick="goBack()">‹</button>
+    <div>
+      <div class="title" id="topTitle">김목구부동산 · 검단 매물</div>
+      <div class="sub" id="topSub">아라역 · 신검단중앙역 인근</div>
+    </div>
+  </div>
+
+  <!-- 목록 화면 -->
+  <div id="listView">
+    <div class="status-msg" id="listStatus">매물을 불러오는 중이에요...</div>
+    <div id="listItems"></div>
+  </div>
+
+  <!-- 상세 화면 -->
+  <div id="detailView">
+    <div class="gallery" id="detailGallery">
+      <div class="no-photo">사진 준비중</div>
+    </div>
+    <div class="detail-body">
+      <div class="name" id="dName">-</div>
+      <div class="addr" id="dAddr">-</div>
+      <div class="price-row">
+        <span class="price" id="dPrice">-</span>
+        <span class="type" id="dType">-</span>
+      </div>
+      <div class="info-grid" id="dInfoGrid"></div>
+      <div class="memo-box" id="dMemoBox" style="display:none;">
+        <div class="label">중개사 코멘트</div>
+        <div class="text" id="dMemo"></div>
+      </div>
+      <div class="agent-row">
+        <div class="agent-avatar">김</div>
+        <div>
+          <div class="agent-name">김목구부동산</div>
+          <div class="agent-phone">032-567-1222</div>
+        </div>
+      </div>
+    </div>
+    <button class="cta-btn" id="detailInquiryBtn">이 매물 상담 신청하기</button>
+  </div>
+
+  <!-- 문의 폼 화면 -->
+  <div id="formView">
+    <div class="form-card">
+      <div class="form-title">상담 신청</div>
+      <div class="form-sub">남겨주시면 김목구부동산이 직접 연락드려요.</div>
+
+      <label class="field-label">문의 매물</label>
+      <div class="selected-property" id="selectedPropertyText">전체 문의</div>
+      <div class="hint" id="selectedPropertyHint" style="display:none;">상세페이지에서 자동으로 채워졌어요.</div>
+
+      <label class="field-label">성함 <span style="color:#E24B4A;">*</span></label>
+      <input type="text" id="inputName" placeholder="홍길동" />
+
+      <label class="field-label">전화번호 <span style="color:#E24B4A;">*</span></label>
+      <input type="tel" id="inputPhone" placeholder="010-0000-0000" />
+
+      <label class="field-label">궁금한 점</label>
+      <div class="quick-btns" id="quickBtns">
+        <button type="button" data-val="가격 협의 가능한가요">가격 협의 가능한가요</button>
+        <button type="button" data-val="직접 보고 싶어요">직접 보고 싶어요</button>
+        <button type="button" data-val="매도·매수하고 싶어요">매도·매수하고 싶어요</button>
+      </div>
+
+      <label class="field-label">희망 연락 시간대</label>
+      <select id="inputTime">
+        <option>아무 때나 괜찮아요</option>
+        <option>오전 (9시~12시)</option>
+        <option>오후 (12시~6시)</option>
+        <option>저녁 (6시 이후)</option>
+      </select>
+
+      <label class="consent-box">
+        <input type="checkbox" id="inputAgree" />
+        <span class="text">
+          <b>[필수]</b> 개인정보 수집·이용에 동의합니다.<br />
+          수집 항목: 성함, 전화번호 · 목적: 상담 및 매물 안내 · 보유기간: 상담 종료 후 1년
+        </span>
+      </label>
+
+      <button class="cta-btn" id="submitBtn" style="margin:0;">상담 신청하기</button>
+      <div class="warn-msg" id="warnMsg">성함, 전화번호를 입력하고 개인정보 동의에 체크해주세요.</div>
+      <div class="success-msg" id="successMsg">신청이 접수됐어요. 곧 연락드릴게요!</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===================== 설정: 여기만 실제 값으로 바꾸시면 됩니다 ===================== */
+const API_URL = "https://script.google.com/macros/s/AKfycbzT4EGSKvXmScZgJ5uvFz0a0AGrhlcSh38Jb9E2yXios77j5zM4RU2d4SWjYQi3iDCtKw/exec";
+
+/* ===================== 상태 ===================== */
+let allProperties = [];
+let currentProperty = null;
+let selectedQuickAnswer = "";
+
+/* ===================== 화면 전환 ===================== */
+function showView(name) {
+  document.getElementById('listView').style.display = name === 'list' ? 'block' : 'none';
+  document.getElementById('detailView').style.display = name === 'detail' ? 'block' : 'none';
+  document.getElementById('formView').style.display = name === 'form' ? 'block' : 'none';
+  document.getElementById('backBtn').className = name === 'list' ? 'back-btn' : 'back-btn show';
+
+  const titleMap = {
+    list: ['김목구부동산 · 검단 매물', '아라역 · 신검단중앙역 인근'],
+    detail: [currentProperty ? currentProperty['건물명'] || '매물 상세' : '매물 상세', '자세히 보기'],
+    form: ['상담 신청', '김목구부동산 032-567-1222']
+  };
+  document.getElementById('topTitle').textContent = titleMap[name][0];
+  document.getElementById('topSub').textContent = titleMap[name][1];
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  if (document.getElementById('formView').style.display === 'block') {
+    showView(currentProperty ? 'detail' : 'list');
+  } else {
+    showView('list');
+  }
+}
+
+/* ===================== 데이터 불러오기 ===================== */
+async function loadProperties() {
+  try {
+    const res = await fetch(API_URL + "?action=getPublicProperties");
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || "불러오기 실패");
+    allProperties = json.data || [];
+    renderList();
+  } catch (err) {
+    document.getElementById('listStatus').textContent =
+      "매물을 불러오지 못했어요. API 주소가 올바른지 확인해주세요. (" + err.message + ")";
+  }
+}
+
+function priceLabel(p) {
+  if (p['거래유형'] === '매매' && p['매매가']) return { price: formatPrice(p['매매가']), type: '매매가' };
+  if (p['거래유형'] === '전세' && p['전세']) return { price: formatPrice(p['전세']), type: '전세' };
+  if (p['거래유형'] === '월세') return { price: formatPrice(p['보증금'] || p['월세']), type: '월세 ' + (p['월세'] || '') };
+  return { price: '가격 문의', type: p['거래유형'] || '' };
+}
+
+function formatPrice(v) {
+  const n = Number(v);
+  if (!n || isNaN(n)) return v || '-';
+  const 억 = Math.floor(n / 10000);
+  const 만 = n % 10000;
+  if (억 > 0 && 만 > 0) return `${억}억 ${만.toLocaleString()}`;
+  if (억 > 0) return `${억}억`;
+  return `${n.toLocaleString()}만`;
+}
+
+function badgeClass(type) {
+  if (type === '매매') return 'badge-sale';
+  if (type === '전세') return 'badge-jeonse';
+  return 'badge-wolse';
+}
+
+function renderList() {
+  const container = document.getElementById('listItems');
+  const status = document.getElementById('listStatus');
+
+  if (allProperties.length === 0) {
+    status.textContent = "지금은 공개된 매물이 없어요. 매물장에서 광고유무를 '예'로 바꿔주세요.";
+    return;
+  }
+  status.style.display = 'none';
+
+  container.innerHTML = allProperties.map((p, idx) => {
+    const pl = priceLabel(p);
+    const thumb = p['사진목록'] && p['사진목록'][0]
+      ? `<img src="${p['사진목록'][0].viewUrl}" alt="" />`
+      : '사진 준비중';
+
+    return `
+      <div class="property-card" onclick="openDetail(${idx})">
+        <div class="thumb">${thumb}</div>
+        <div class="card-info">
+          <div class="row1">
+            <span class="name">${p['건물명'] || '매물'} ${p['동'] || ''}</span>
+            <span class="badge ${badgeClass(p['거래유형'])}">${p['거래유형'] || ''}</span>
+          </div>
+          <div class="meta">${p['타입'] ? p['타입'] + '타입' : ''} · ${p['호수'] || ''} · ${p['방향'] || ''}</div>
+          <div class="price">${pl.price}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openDetail(idx) {
+  currentProperty = allProperties[idx];
+  renderDetail(currentProperty);
+  showView('detail');
+}
+
+function renderDetail(p) {
+  const gallery = document.getElementById('detailGallery');
+  const photos = p['사진목록'] || [];
+  if (photos.length > 0) {
+    gallery.innerHTML = `<img src="${photos[0].viewUrl}" alt="" />
+      <span class="counter">1 / ${photos.length}</span>`;
+  } else {
+    gallery.innerHTML = `<div class="no-photo">사진 준비중</div>`;
+  }
+
+  document.getElementById('dName').textContent = `${p['건물명'] || ''} ${p['호수'] || ''}`;
+  document.getElementById('dAddr').textContent = `${p['동'] || ''} · ${p['해당층/전체층'] || ''}층`;
+
+  const pl = priceLabel(p);
+  document.getElementById('dPrice').textContent = pl.price;
+  document.getElementById('dType').textContent = pl.type;
+
+  document.getElementById('dInfoGrid').innerHTML = `
+    <div class="info-cell"><div class="label">타입</div><div class="value">${p['타입'] || '-'}</div></div>
+    <div class="info-cell"><div class="label">공급면적</div><div class="value">${p['공급면적'] ? p['공급면적'] + '㎡' : '-'}</div></div>
+    <div class="info-cell"><div class="label">방향</div><div class="value">${p['방향'] || '-'}</div></div>
+    <div class="info-cell"><div class="label">공실여부</div><div class="value">${p['공실여부'] || '-'}</div></div>
+  `;
+
+  const memoBox = document.getElementById('dMemoBox');
+  if (p['기타사항'] || p['상담메모']) {
+    memoBox.style.display = 'block';
+    document.getElementById('dMemo').textContent = p['기타사항'] || p['상담메모'];
+  } else {
+    memoBox.style.display = 'none';
+  }
+}
+
+document.getElementById('detailInquiryBtn').addEventListener('click', () => {
+  openForm(currentProperty);
+});
+
+function openForm(property) {
+  const textEl = document.getElementById('selectedPropertyText');
+  const hintEl = document.getElementById('selectedPropertyHint');
+  if (property) {
+    const pl = priceLabel(property);
+    textEl.textContent = `${property['건물명'] || ''} ${property['타입'] || ''}타입 · ${pl.type} ${pl.price}`;
+    hintEl.style.display = 'block';
+  } else {
+    textEl.textContent = '전체 문의';
+    hintEl.style.display = 'none';
+  }
+  showView('form');
+}
+
+/* 궁금한 점 버튼 */
+document.getElementById('quickBtns').addEventListener('click', (e) => {
+  if (e.target.tagName !== 'BUTTON') return;
+  document.querySelectorAll('#quickBtns button').forEach(b => b.classList.remove('selected'));
+  e.target.classList.add('selected');
+  selectedQuickAnswer = e.target.dataset.val;
+});
+
+/* 상담 신청 제출 */
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const name = document.getElementById('inputName').value.trim();
+  const phone = document.getElementById('inputPhone').value.trim();
+  const agree = document.getElementById('inputAgree').checked;
+  const warn = document.getElementById('warnMsg');
+  const success = document.getElementById('successMsg');
+  const btn = document.getElementById('submitBtn');
+
+  if (!name || !phone || !agree) {
+    warn.style.display = 'block';
+    success.style.display = 'none';
+    return;
+  }
+  warn.style.display = 'none';
+
+  const payload = {
+    action: 'addConsultation',
+    data: JSON.stringify({
+      고객이름: name,
+      매물번호: currentProperty ? currentProperty['매물번호'] : '',
+      유형: '카톡문의',
+      상담내용: `[${document.getElementById('inputTime').value}] ${selectedQuickAnswer || '문의'} / 연락처: ${phone}`
+    })
+  };
+
+  btn.disabled = true;
+  btn.textContent = '접수 중...';
+
+  try {
+    const params = new URLSearchParams(payload);
+    const res = await fetch(API_URL + "?" + params.toString());
+    const json = await res.json();
+    if (json.success) {
+      success.style.display = 'block';
+      btn.textContent = '신청 완료';
+    } else {
+      throw new Error(json.message || '신청 실패');
+    }
+  } catch (err) {
+    warn.textContent = '신청 중 문제가 생겼어요: ' + err.message;
+    warn.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '상담 신청하기';
+  }
+});
+
+/* 시작 */
+loadProperties();
+</script>
+</body>
+</html>
