@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>손님 링크 생성기 (중개사 전용)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+    background: #F1EFE8;
+    color: #24303D;
+    padding: 20px;
+  }
+  .box {
+    max-width: 480px;
+    margin: 0 auto;
+    background: #FAF7F0;
+    border-radius: 14px;
+    padding: 20px;
+  }
+  h1 { font-size: 16px; margin-bottom: 4px; }
+  .warn {
+    font-size: 12px;
+    color: #A0522D;
+    background: #FAECE7;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  label { font-size: 12px; color: #5F5E5A; display: block; margin-bottom: 4px; margin-top: 12px; }
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 0.5px solid #D3D1C7;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  button {
+    width: 100%;
+    margin-top: 16px;
+    background: #0F6E56;
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .result {
+    display: none;
+    margin-top: 16px;
+    background: #E1F5EE;
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .result .link {
+    font-size: 12px;
+    word-break: break-all;
+    background: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    margin: 8px 0;
+  }
+  .result button.copy-btn {
+    background: #04342C;
+    margin-top: 4px;
+  }
+  .status { font-size: 12px; color: #E24B4A; margin-top: 8px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h1>손님 링크 생성기</h1>
+  <div class="warn">⚠ 이 페이지는 대표님만 쓰세요. 손님에게 이 페이지 링크는 절대 보내지 마세요.</div>
+
+  <label>고객ID (고객 시트에서 확인)</label>
+  <input type="text" id="customerIdInput" placeholder="예: C260713123456" />
+
+  <button id="generateBtn">손님용 링크 만들기</button>
+  <div class="status" id="statusMsg"></div>
+
+  <div class="result" id="resultBox">
+    <div style="font-size:13px;font-weight:600;">이 링크를 손님에게 보내주세요 👇</div>
+    <div class="link" id="resultLink"></div>
+    <button class="copy-btn" onclick="copyLink()">링크 복사하기</button>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzT4EGSKvXmScZgJ5uvFz0a0AGrhlcSh38Jb9E2yXios77j5zM4RU2d4SWjYQi3iDCtKw/exec";
+
+/* 실제 customer.html이 올라간 주소로 바꿔주세요 (index.html과 같은 사이트에 올리셨다면 파일명만 이렇게) */
+const CUSTOMER_PAGE_URL = "customer.html";
+
+document.getElementById('generateBtn').addEventListener('click', async () => {
+  const customerId = document.getElementById('customerIdInput').value.trim();
+  const status = document.getElementById('statusMsg');
+  const resultBox = document.getElementById('resultBox');
+
+  if (!customerId) {
+    status.textContent = '고객ID를 입력해주세요.';
+    status.style.display = 'block';
+    return;
+  }
+  status.style.display = 'none';
+  resultBox.style.display = 'none';
+
+  try {
+    const res = await fetch(API_URL + "?action=generateShareCode&customerId=" + encodeURIComponent(customerId));
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || '생성 실패');
+
+    const fullLink = `${location.origin}${location.pathname.replace('link-generator.html','')}${CUSTOMER_PAGE_URL}?c=${json.code}`;
+    document.getElementById('resultLink').textContent = fullLink;
+    resultBox.style.display = 'block';
+    resultBox.dataset.link = fullLink;
+  } catch (err) {
+    status.textContent = '오류: ' + err.message;
+    status.style.display = 'block';
+  }
+});
+
+function copyLink() {
+  const link = document.getElementById('resultBox').dataset.link;
+  navigator.clipboard.writeText(link).then(() => {
+    alert('복사했어요! 카톡으로 붙여넣기 하시면 돼요.');
+  });
+}
+</script>
+</body>
+</html>
